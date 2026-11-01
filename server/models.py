@@ -1,3 +1,4 @@
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -11,6 +12,11 @@ class Exercise(db.Model):
     category = db.Column(db.String(100), nullable=False)
     equipment_needed = db.Column(db.Boolean, nullable=False)
 
+    workout_exercises = db.relationship(
+        "WorkoutExercises",
+        back_populates="exercise"
+    )
+
     def __repr__(self):
         return f"<Exercise {self.name}>"
 
@@ -23,8 +29,15 @@ class Workout(db.Model):
     duration_minutes = db.Column(db.Integer, nullable=False)
     notes = db.Column(db.Text)
 
+    workout_exercises = db.relationship(
+        "WorkoutExercises",
+        back_populates="workout",
+        cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f"<Workout {self.id}: {self.date}>"
+
 
 class WorkoutExercises(db.Model):
     __tablename__ = "workout_exercises"
@@ -43,6 +56,16 @@ class WorkoutExercises(db.Model):
     reps = db.Column(db.Integer)
     sets = db.Column(db.Integer)
     duration_seconds = db.Column(db.Integer)
+
+    workout = db.relationship(
+        "Workout",
+        back_populates="workout_exercises"
+    )
+
+    exercise = db.relationship(
+        "Exercise",
+        back_populates="workout_exercises"
+    )
 
     def __repr__(self):
         return f"<WorkoutExercises workout={self.workout_id} exercise={self.exercise_id}>"
