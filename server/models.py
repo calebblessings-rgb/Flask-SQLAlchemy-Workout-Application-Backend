@@ -112,33 +112,4 @@ class WorkoutExercises(db.Model):
         return f"<WorkoutExercises workout={self.workout_id} exercise={self.exercise_id}>"
      
 
-    workout = db.relationship(
-        "Workout",
-        back_populates="workout_exercises"
-    )
-
-    exercise = db.relationship(
-        "Exercise",
-        back_populates="workout_exercises"
-    )
-
-    @validates("name")
-    def validate_name(self, key, value):
-        if not value or not value.strip():
-            raise ValueError("Exercise name cannot be empty.")
-        return value.strip()
-
-    @validates("category")
-    def validate_category(self, key, value):
-        if not value or not value.strip():
-            raise ValueError("Exercise category cannot be empty.")
-        return value.strip()
-
-    @validates("duration_minutes")
-    def validate_duration(self, key, value):
-        if value is None or value <= 0:
-            raise ValueError("Workout duration must be greater than zero.")
-        return value
-
-    def __repr__(self):
-        return f"<WorkoutExercises workout={self.workout_id} exercise={self.exercise_id}>"
+   
