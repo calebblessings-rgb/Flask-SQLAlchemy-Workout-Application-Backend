@@ -56,5 +56,26 @@ def create_workout():
         db.session.rollback()
         return jsonify({"error": "Unable to create workout"}), 500
 
+@app.route("/workouts/<int:id>", methods=["DELETE"])
+def delete_workout(id):
+    workout = db.session.get(Workout, id)
+
+    if workout is None:
+        return jsonify({"error": "Workout not found"}), 404
+
+    try:
+        db.session.delete(workout)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Workout deleted successfully"
+        }), 200
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({
+            "error": "Unable to delete workout"
+        }), 500
+
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
