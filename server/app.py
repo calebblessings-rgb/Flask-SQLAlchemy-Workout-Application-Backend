@@ -119,5 +119,32 @@ def delete_workout(id):
             "error": "Unable to delete workout"
         }), 500
 
+@app.route("/exercises/<int:id>", methods=["DELETE"])
+def delete_exercise(id):
+    exercise = db.session.get(Exercise, id)
+
+    if exercise is None:
+        return jsonify({"error": "Exercise not found"}), 404
+
+    # Check whether the exercise is associated with any workout.
+    if exercise.workout_exercises:
+        return jsonify({
+            "error": "Cannot delete exercise because it is associated with a workout"
+        }), 409
+
+    try:
+        db.session.delete(exercise)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Exercise deleted successfully"
+        }), 200
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({
+            "error": "Unable to delete exercise"
+        }), 500
+
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
