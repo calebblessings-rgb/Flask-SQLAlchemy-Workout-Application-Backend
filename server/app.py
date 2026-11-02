@@ -2,8 +2,12 @@ from flask import Flask, jsonify, request
 from marshmallow import ValidationError
 from flask_migrate import Migrate
 
-from server.models import db, Workout, Exercise
-from server.schemas import WorkoutSchema, ExerciseSchema
+from server.models import db, Workout, Exercise, WorkoutExercises
+from server.schemas import (
+    WorkoutSchema,
+    ExerciseSchema,
+    WorkoutExercisesSchema
+)
 
 app = Flask(__name__)
 
@@ -144,6 +148,65 @@ def delete_exercise(id):
         db.session.rollback()
         return jsonify({
             "error": "Unable to delete exercise"
+        }), 500
+
+@app.route(
+    "/workouts/<int:workout_id>/exercises/<int:exercise_id>/workout_exercises",
+    methods=["POST"]
+)
+def add_exercise_to_workout(workout_id, exercise_id):
+
+    # Check whether the workout exists.
+    workout = db.session.get(Workout, workout_id)
+
+    if workout is None:
+        return jsonify({"error": "Workout not found"}), 404
+
+    # Check whether the exercise exists.
+    exercise = db.session.get(Exercise, exercise_id)
+
+    if exercise is None:
+        return jsonify({"error": "Exercise not found"}), 404
+
+    # Prevent duplicate exercise associations.
+    existing_association = WorkoutExercises.query.filter_by(
+        workout_id=workout_id,
+        exercise_id=exercise_id
+    ).first()
+
+    if existing_association:
+        return jsonify({
+            "error": "Exercise is already associated with this workout"
+        }), 409
+
+    try:
+        # Get optional workout exercise details.
+        request_data = request.get_json() or {}
+
+        # Add IDs from the URL to the request data.
+        request_data["workout_id"] = workout_id
+        request_data["exercise_id"] = exercise_id
+
+        # Validate incoming data.
+        association_data = WorkoutExercisesSchema().load(request_data)
+
+        # Create the association.
+        new_association = WorkoutExercises(**association_data)
+
+        db.session.add(new_association)
+        db.session.commit()
+
+        return jsonify(
+            WorkoutExercisesSchema().dump(new_association)
+        ), 201
+
+    except ValidationError as error:
+        return jsonify({"errors": error.messages}), 400
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({
+            "error": "Unable to add exercise to workout"
         }), 500
 
 if __name__ == "__main__":
