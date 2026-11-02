@@ -1,5 +1,5 @@
-
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from marshmallow import ValidationError
 from flask_migrate import Migrate
 
 from server.models import db, Workout
@@ -32,6 +32,29 @@ def get_workout_by_id(id):
         return jsonify({"error": "Workout not found"}), 404
 
     return jsonify(WorkoutSchema().dump(workout)), 200
+
+@app.route("/workouts", methods=["POST"])
+def create_workout():
+    try:
+        # Validate and deserialize incoming JSON.
+        workout_data = WorkoutSchema().load(request.get_json())
+
+        # Create a new Workout object.
+        new_workout = Workout(**workout_data)
+
+        # Save the workout to the database.
+        db.session.add(new_workout)
+        db.session.commit()
+
+        # Return the newly created workout.
+        return jsonify(WorkoutSchema().dump(new_workout)), 201
+
+    except ValidationError as error:
+        return jsonify({"errors": error.messages}), 400
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({"error": "Unable to create workout"}), 500
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
