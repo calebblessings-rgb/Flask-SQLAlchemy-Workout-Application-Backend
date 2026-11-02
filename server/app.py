@@ -24,6 +24,14 @@ def get_workouts():
 
     return jsonify(workout_schema.dump(workouts)), 200
 
+@app.route("/workouts/<int:id>", methods=["GET"])
+def get_workout_by_id(id):
+    workout = db.session.get(Workout, id)
+
+    if workout is None:
+        return jsonify({"error": "Workout not found"}), 404
+
+    return jsonify(WorkoutSchema().dump(workout)), 200
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
