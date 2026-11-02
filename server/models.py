@@ -1,4 +1,4 @@
-
+from sqlalchemy.ext.associationproxy import association_proxy
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint
 from sqlalchemy.orm import validates
@@ -17,6 +17,11 @@ class Exercise(db.Model):
     workout_exercises = db.relationship(
         "WorkoutExercises",
         back_populates="exercise"
+    )
+
+    workouts = association_proxy(
+    "workout_exercises",
+    "workout"
     )
 
     @validates("name")
@@ -58,6 +63,11 @@ class Workout(db.Model):
         back_populates="workout",
         cascade="all, delete-orphan"
     )
+
+    exercises = association_proxy(
+    "workout_exercises",
+    "exercise"
+)
 
     @validates("duration_minutes")
     def validate_duration(self, key, value):
