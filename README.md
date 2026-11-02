@@ -302,3 +302,5 @@ The current test suite contains 18 tests covering:
 Caleb Blessings
 
 GitHub: [calebblessings-rgb](https://github.com/calebblessings-rgb)
+
+<img src="img/tests_passing.png">
