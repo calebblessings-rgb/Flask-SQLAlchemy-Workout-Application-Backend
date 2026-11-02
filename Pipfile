@@ -11,6 +11,7 @@ werkzeug = "==2.2.2"
 importlib-metadata = "==6.0.0"
 importlib-resources = "==5.10.0"
 marshmallow = "==3.20.1"
+marshmallow-sqlalchemy = "*"
 
 [dev-packages]
 pytest = "*"
