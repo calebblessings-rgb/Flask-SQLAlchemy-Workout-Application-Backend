@@ -75,6 +75,29 @@ def create_workout():
         db.session.rollback()
         return jsonify({"error": "Unable to create workout"}), 500
 
+@app.route("/exercises", methods=["POST"])
+def create_exercise():
+    try:
+        # Validate and deserialize incoming JSON.
+        exercise_data = ExerciseSchema().load(request.get_json())
+
+        # Create a new Exercise object.
+        new_exercise = Exercise(**exercise_data)
+
+        # Save the exercise to the database.
+        db.session.add(new_exercise)
+        db.session.commit()
+
+        # Return the newly created exercise.
+        return jsonify(ExerciseSchema().dump(new_exercise)), 201
+
+    except ValidationError as error:
+        return jsonify({"errors": error.messages}), 400
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({"error": "Unable to create exercise"}), 500
+
 @app.route("/workouts/<int:id>", methods=["DELETE"])
 def delete_workout(id):
     workout = db.session.get(Workout, id)
