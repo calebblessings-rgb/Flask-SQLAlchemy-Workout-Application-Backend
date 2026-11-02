@@ -2,8 +2,8 @@ from flask import Flask, jsonify, request
 from marshmallow import ValidationError
 from flask_migrate import Migrate
 
-from server.models import db, Workout
-from server.schemas import WorkoutSchema
+from server.models import db, Workout, Exercise
+from server.schemas import WorkoutSchema, ExerciseSchema
 
 app = Flask(__name__)
 
@@ -23,6 +23,16 @@ def get_workouts():
     workouts = Workout.query.all()
 
     return jsonify(workout_schema.dump(workouts)), 200
+
+# Initialize the exercise schema.
+exercise_schema = ExerciseSchema(many=True)
+
+
+@app.route("/exercises", methods=["GET"])
+def get_exercises():
+    exercises = Exercise.query.all()
+
+    return jsonify(exercise_schema.dump(exercises)), 200
 
 @app.route("/workouts/<int:id>", methods=["GET"])
 def get_workout_by_id(id):
